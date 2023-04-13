@@ -1,0 +1,160 @@
+import os
+import time
+import random
+
+def cifrar_cesar(texto, mudar, descriptografar=False):
+    """Tal do Cifra de César"""
+    if descriptografar:
+        mudar = 26 - mudar
+    resultado = ""
+    for char in texto:
+        if char.isalpha():
+            char_code = ord(char) + mudar
+            if char.isupper():
+                if char_code > ord('Z'):
+                    char_code -= 26
+                elif char_code < ord('A'):
+                    char_code += 26
+            elif char.islower():
+                if char_code > ord('z'):
+                    char_code -= 26
+                elif char_code < ord('a'):
+                    char_code += 26
+            resultado += chr(char_code)
+        else:
+            resultado += char
+    return resultado
+
+def limpar_terminal():
+    """Limpa o terminal"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def registrar_palindromo():
+    """Registra uma palavra de palindromo como verificação"""
+    while True:
+        #limpar_terminal() desativamos
+        print("Modo de Registro de palindromo")
+        palindromo = input("Digite uma palavra de palindromo: ")
+        if palindromo == palindromo[::-1]:
+            with open("palindromo.txt", "w") as f:
+                f.write(palindromo)
+            print("Palindromo registrado com sucesso!")
+            break
+        else:
+            print("A palavra não é um palindromo. Tente novamente.")
+
+def verificar_palindromo():
+    """Verifica se a palavra digitada é um palindromo"""
+    with open("palindromo.txt", "r") as f:
+        palindromo = f.read()
+    user_input = input("Digite a palavra de palindromo para confirmar a recuperação: ")
+    if user_input == palindromo:
+        print("palindromo confirmado! Você está no modo de recuperação.")
+    else:
+        print("palindromo incorreto. Tente novamente.")
+        return False
+    return True
+
+def recuperar_cifra():
+    """Recupera uma cifra decifrada anteriormente"""
+    with open("cifras.txt", "r") as f:
+        cifras = f.readlines()
+    print("Cifras decifradas:")
+    for i, cifra in enumerate(cifras):
+        print(f"{i+1}. {cifra.strip()}")
+    escolha = input("Digite o número da cifra que deseja recuperar: ")
+    while not escolha.isdigit() or int(escolha) not in range(1, len(cifras)+1):
+        print("Opção inválida. Digite o número correspondente a cifra que deseja recuperar.")
+        escolha = input("Digite o número da cifra que deseja recuperar: ")
+    recuperar_cifras = cifras[int(escolha)-1].strip()
+    print(f"Cifra recuperada: {recuperar_cifras}")
+    return recuperar_cifras
+
+def main():
+    nuvem = []  # Salva os códigos decifrados
+
+    while True:
+        #limpar_terminal() desativamos
+        print("Bem-vindo à Cifra de César!")
+        print("[1] Modo Enunciado")
+        print("[2] Modo Avançado")
+        print("[3] Modo de Recuperação")
+        modo = None
+        while modo not in ["1", "2", "3"]:
+            modo = input("Escolha o modo (1, 2 ou 3): ")
+            if modo not in ["1", "2", "3"]:
+                print("Opção inválida. Por favor, escolha entre o Modo Enunciado (1), o Modo Avançado (2) ou o Modo de Recuperação (3).")
+
+        if modo == "3":
+            senha = input("Digite a palavra de palindromo para acesso: ")
+            if senha != senha[::-1]:
+                print("Palavra de palindromo invalida. Acesso negado.")
+                time.sleep(3)
+                continue
+            print("Modo de Recuperação de Cifras")
+            escolha = input("Deseja ver todas as cifras armazenadas? (S/N) ")
+            if escolha.upper() == "S":
+                with open("cifras.txt", "r") as f:
+                    cifras = f.readlines()
+                if cifras:
+                    print("Cifras decifradas armazenadas:")
+                    for i, cifra in enumerate(cifras):
+                        print(f"{i+1}. {cifra.strip()}")
+                else:
+                    print("Não tem cifras decifradas armazenadas.")
+                escolha = input("Deseja tentar recuperar uma cifra? (S/N) ")
+            if escolha.upper() == "S":
+                recuperar_cifras = recuperar_cifra()
+                if recuperar_cifras:
+                    mudar = nuvem.count(recuperar_cifras)
+                    resultado = cifrar_cesar(recuperar_cifras, mudar, descriptografar=True)
+                    print("resultado: ", resultado)
+                    time.sleep(3)
+                else:
+                    print("Não foi possível recuperar a cifra.")
+                    time.sleep(3)
+            else:
+                print("Saindo do Modo Recuperação...")
+                time.sleep(2)
+
+        else:
+            texto = input("Digite o texto a ser cifrado/decifrado: ")
+            criptografar = input("Digite 'C' para criptografar e 'D' para descriptografar: ")
+            mudar_escolha = input("Deseja utilizar um deslocamento? (S/N) ")
+
+            Bool = False
+
+            if (criptografar.upper() == "C"):
+              Bool = False
+            
+            if (criptografar.upper() == "D"):
+              Bool = True
+
+              while mudar_escolha.upper() not in ["S", "N"]:
+                mudar_escolha = input("Por favor, responda S ou N: ")
+
+            if mudar_escolha.upper() == "S":
+                mudar = input("Digite o deslocamento desejado: ")
+                while not mudar.isdigit():
+                    print("Por favor, digite apenas números.")
+                    mudar = input("Digite o deslocamento desejado: ")
+                mudar = int(mudar)
+            else:
+                mudar = 0
+
+
+            if modo == "2":
+                escolha = input("Deseja registrar uma palavra de palindromo para recuperação de cifras? (S/N) ")
+                if escolha.upper() == "S":
+                    registrar_palindromo()
+
+            resultado = cifrar_cesar(texto, mudar, Bool)
+            print("resultado: ", resultado)
+            nuvem.append(resultado)
+            with open("cifras.txt", "a") as f:
+                f.write(resultado + "\n")
+            time.sleep(3)
+
+
+if __name__ == '__main__':
+    main()
